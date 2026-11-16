@@ -1,0 +1,101 @@
+customer_id,price_sensitivity,evidence,confidence
+1,0.50,Alternates everyday Korean lunches with a favorite double burger and gives no price reason.,low
+2,0.50,Enjoys home-cooked vegetables and a neighborhood snack shop for their flavors.,low
+3,0.30,Checks whether restaurants are genuinely good beyond social-media advertising and seeks fresh bread.,medium
+4,0.50,Returns to a favorite chicken shop and chooses simple barley rice or fermented soybean stew without a stated price reason.,low
+5,0.40,Seeks out baked goods from well-known bakeries as a regular treat.,low
+6,0.40,Chooses attractive sit-down pasta restaurants and carefully prepared Korean meals for planned outings.,low
+7,0.40,Explicitly prefers dining in at restaurants with a well-kept atmosphere to ordering delivery.,low
+8,0.50,Orders basil pesto pasta at a cozy restaurant every other week with no stated price reason.,low
+9,0.50,Eats barley rice or soybean stew at lunch and visits a familiar pub after work.,low
+10,0.50,Shares neighborhood snacks with his wife and orders a weekly pork dish as a treat.,low
+11,0.50,Cooks with leftover vegetables and occasionally dines out for beef ribs with no stated price comparison.,low
+12,0.50,Alternates social barbecue meals with favorite fast-food and delivery orders.,low
+13,0.50,Chooses Korean meals with colleagues or a quick burger and gives no price reason.,low
+14,0.50,Plans family barbecue meals and orders the children's favorite snacks without mentioning prices.,low
+15,0.20,Seeks well-marbled Korean beef and books chef-selected seasonal sushi for special meals.,medium
+16,0.45,Returns to a favorite bakery specifically for freshly baked salt bread.,low
+17,0.50,Chooses familiar Korean meals and visits a regular pub to socialize with colleagues.,low
+18,0.50,Orders kimbap and tteokbokki from a familiar snack shop and gives no price reason.,low
+19,0.60,Is described as thrifty and most enjoys fresh greens selected at the local market.,medium
+20,0.42,Chooses fresh sashimi and values enjoyable food and conversation as a reward.,low
+21,0.35,Seeks good-quality Korean beef for family meals and treats herself to sushi from a favorite restaurant.,medium
+22,0.45,Returns to a favorite sushi restaurant for fresh fish and social occasions.,low
+23,0.50,Meets friends at a snack shop and usually prepares Korean meals at home without mentioning prices.,low
+24,0.35,Specifically prefers visiting restaurants in person for their atmosphere and enjoys carefully plated food.,medium
+25,0.50,Chooses simple Korean food with family and occasionally orders favorite chain dishes for the children.,low
+26,0.45,Prefers the lively experience of visiting restaurants in person over delivery.,low
+27,0.50,Plans around home cooking and sometimes chooses sushi delivery for convenience.,low
+28,0.50,Returns to an older market restaurant for strongly flavored black-bean noodles.,low
+29,0.50,Values a weekly sushi outing with longtime friends and gives no price reason.,low
+30,0.50,Orders favorite chicken or pork dishes to unwind and gives no price reason.,low
+31,0.50,Seeks pasta or risotto for a change from work and rarely orders delivery.,low
+32,0.50,Alternates Korean meals with familiar chain food and orders a weekly burger set.,low
+33,0.25,Explicitly evaluates restaurant atmosphere and presentation and seeks fresh sushi omakase.,medium
+34,0.50,Chooses simple Korean meals with family and picks up grandchildren's favorite snacks.,low
+35,0.50,Returns to a familiar barbecue restaurant and prefers comforting flavors reminiscent of home cooking.,low
+36,0.45,Sometimes orders freshly baked salt bread or red bean buns to enjoy with tea.,low
+37,0.40,Seeks a restaurant serving thick-cut aged sashimi and enjoys the dish as a treat after work.,low
+38,0.50,Likes a longtime neighborhood diner for home-style food and orders favorite chicken brands spontaneously.,low
+39,0.50,Chooses market barley rice or snacks and usually cooks at home with no stated price reason.,low
+40,0.40,Values freshly baked bread enough to visit the bakery in person.,medium
+41,0.37,Compares recent reviews to find reliably good kimbap and tteokbokki.,medium
+42,0.50,Returns to a familiar barbecue restaurant and insists on finishing with fried rice.,low
+43,0.50,Frequently orders familiar snack dishes and cooks less when cleanup feels inconvenient.,low
+44,0.45,Seeks out a tucked-away restaurant for neatly presented sushi and warm udon.,low
+45,0.50,Prefers visiting the neighborhood restaurant in person to greet the owner.,low
+46,0.50,Selects mild Korean food and shares occasional chicken delivery with family.,low
+47,0.50,Frequents barbecue and sushi places and orders delivery as a leisure treat without mentioning prices.,low
+48,0.50,Plans occasional trips for barley rice and regular chicken orders with no stated price reason.,low
+49,0.50,Shares cream risotto with friends and orders snack dishes to try new habits.,low
+50,0.45,Seeks freshly baked salt bread from the local bakery when appetite is low.,low
+51,0.36,Seeks hidden local restaurants and pays close attention to subtle flavor differences.,medium
+52,0.50,Returns to a favorite Korean restaurant and buys market snacks when hungry.,low
+53,0.50,Chooses cooking by taste at home and occasionally orders black-bean noodles and sweet-and-sour pork.,low
+54,0.50,Orders a favorite pork dish weekly and chooses freshly fried cheese sticks as a treat.,low
+55,0.41,Seeks specialty spots in Mullae for cilantro quesadillas and mazésoba to try new flavors.,low
+56,0.50,Looks forward to spicy freshwater fish stew after a drive and gives no price reason.,low
+57,0.50,Prepares seasonal side dishes and enjoys neighborhood barbecue or chicken to unwind.,low
+58,0.50,Returns weekly to a familiar market snack shop to eat and catch up with neighbors.,low
+59,0.50,Returns to a favorite barbecue restaurant and picks up local snacks for convenient meals.,low
+60,0.50,Frequents nearby places for familiar Korean meals and rarely orders delivery.,low
+61,0.20,Explicitly prioritizes fresh pasta and in-person atmosphere and watches closely for service quality.,medium
+62,0.47,Cares about how food and drinks complement each other at social meals.,low
+63,0.50,Selects seasonal greens from the market and sometimes buys fresh bakery bread for home.,low
+64,0.24,Chooses restaurants for atmosphere and carefully presented dishes and explicitly dislikes delivery flavors.,medium
+65,0.50,Visits barbecue restaurants and a familiar pub to unwind and gives no price reason.,low
+66,0.50,Enjoys a weekly meal with colleagues and orders snack sets for quiet weekends.,low
+67,0.50,Chooses an occasional pasta outing for atmosphere and shares seasonal sashimi with friends.,low
+68,0.50,Frequents a regular Korean restaurant near home and sometimes orders chicken for convenience.,low
+69,0.30,Will wait in a long queue to try a bakery's signature pastry.,medium
+70,0.42,Values selecting a restaurant in person and enjoying a leisurely meal rather than ordering delivery.,low
+71,0.50,Returns for charcoal-grilled ribs and occasionally treats himself to a specific crispy chicken.,low
+72,0.50,Chooses mild Korean meals for health and a familiar Chinese restaurant to spend time with friends.,low
+73,0.50,Eats at home most days and meets acquaintances for pork or sushi without citing price.,low
+74,0.60,Is described as running a thrifty household and usually cooks while occasionally buying simple snacks.,medium
+75,0.50,Favors the aroma of marinated ribs after hiking and occasionally orders convenient noodle meals.,low
+76,0.50,Returns to a favorite Japanese restaurant for a regular Friday meal and seeks neat vegetable side dishes.,low
+77,0.50,Returns for charcoal-grilled ribs and orders fried chicken occasionally with no stated price reason.,low
+78,0.50,Chooses meatless dishes at local restaurants and orders chicken for family gatherings.,low
+79,0.37,Seeks out bakeries specifically for flavorful freshly baked salt bread.,medium
+80,0.50,Enjoys market tofu stew and branded chicken delivery with no stated price reason.,low
+81,0.50,Thinks of a favorite market barbecue meal as a reward and orders chain food when asked by family.,low
+82,0.40,Prefers dining in for the lively atmosphere and seeks out new dishes and handmade burgers.,low
+83,0.40,Seeks restaurants for specific qualities such as crisp tempura and carefully served Korean or Japanese dishes.,low
+84,0.50,Returns to a small Thai restaurant for its sour soup and also enjoys neatly served Korean meals.,low
+85,0.45,Sticks to favorite restaurant dishes even when ordering delivery.,low
+86,0.50,Prepares seasonal dishes at home and sometimes goes out for sushi or soba with no stated price reason.,low
+87,0.50,Grows vegetables at home and returns to a favorite Chinese restaurant for occasional meals out.,low
+88,0.21,Judges the texture of ribs and the aging of sashimi and records restaurant menu changes.,medium
+89,0.50,Prefers vegetable side dishes and occasionally gets handmade burgers or cheese pizza as a change.,low
+90,0.50,Returns to places serving mild Korean meals and orders favorite chicken as a weekly reward.,low
+91,0.33,Examines a favorite restaurant's presentation and atmosphere when a meal captures her interest.,medium
+92,0.50,Visits a pork-rib restaurant with family and occasionally orders the children's favorite pizza.,low
+93,0.40,Looks closely at restaurant cleanliness and is particular about menu selection.,low
+94,0.50,Uses a favorite barbecue place to socialize and orders weekday delivery to enjoy time alone.,low
+95,0.50,Prepares seasonal vegetables and chooses a familiar barley rice restaurant or shared chicken meal.,low
+96,0.50,Prefers ordering from restaurant staff in person and enjoys simple meals with freshly cooked rice.,low
+97,0.50,Chooses crisp pork cutlet or soba after work and eats barbecue with family on weekends.,low
+98,0.50,Regularly orders a specific fried chicken and occasionally eats out for stew or grilled fish.,low
+99,0.38,Tries new handmade burgers and keeps a recipe notebook while practicing cooking.,low
+100,0.67,Uses delivery-app gift certificates for a regular pork order and treats herself to sushi occasionally.,medium

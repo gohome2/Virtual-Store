@@ -1,0 +1,4 @@
+date,run_type,success_metric,note
+2026-11-16T15:30:41+09:00,trial,"PPO on CPU ran 2,048 steps in 0.52 s (0.25 ms per step).",Trial timings and commands are in trial.txt
+2026-11-16T15:31:23+09:00,validation,"Do nothing | Mean 30-day profit (KRW) 1,184,800 | Worst opt-outs 0.0%",Baseline validation on the fixed evaluation windows
+2026-11-16T15:31:27+09:00,validation,"Do nothing | Mean 30-day profit (KRW) 1,184,800 | Worst opt-outs 0.0%",Baseline validation on the fixed evaluation windows

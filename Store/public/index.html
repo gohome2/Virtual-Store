@@ -1,0 +1,908 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Yeouido Riverside Café</title>
+<link rel="icon" href="data:,">
+<style>
+  :root {
+    color-scheme: light;
+    font: 14px/1.4 system-ui, sans-serif;
+    color: #203c39;
+    --muted: #58716e;
+    --accent: #14554a;
+    --border: #d8e4df;
+    --card: rgb(253 255 251 / 95%);
+    --shadow: 0 8px 28px rgb(34 68 63 / 12%), 0 2px 4px rgb(34 68 63 / 5%);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; min-width: 300px; background: #dceceb; }
+  canvas { display: block; position: fixed; width: 100%; height: 100%; }
+  .card {
+    position: fixed;
+    z-index: 1;
+    border: 1px solid rgb(255 255 255 / 80%);
+    border-radius: 16px;
+    background: var(--card);
+    box-shadow: var(--shadow);
+  }
+  .status { top: 20px; left: 20px; width: 274px; padding: 15px 17px; }
+  h1 { margin: 0 0 4px; font-size: 18px; line-height: 1.15; letter-spacing: -.035em; }
+  .status-meta, .status-weather { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .status-meta { font-size: 12px; color: var(--muted); }
+  .status-weather { margin-top: 11px; padding-top: 9px; border-top: 1px solid var(--border); font-size: 12px; }
+  #clock { font-variant-numeric: tabular-nums; font-weight: 750; font-size: 17px; }
+  .project { top: 138px; left: 20px; width: 274px; }
+  .results { top: 20px; right: 20px; width: 294px; }
+  details summary { list-style: none; cursor: pointer; padding: 12px 16px; font-weight: 750; }
+  details summary::-webkit-details-marker { display: none; }
+  details summary::after { content: '⌄'; float: right; margin-left: 6px; color: var(--muted); }
+  details[open] summary::after { content: '⌃'; }
+  details[open] summary { border-bottom: 1px solid var(--border); }
+  .project-grid { padding: 10px 16px; }
+  dl { margin: 0; }
+  .project-grid > div, .totals > div {
+    display: grid;
+    grid-template-columns: 66px minmax(0, 1fr);
+    align-items: baseline;
+    gap: 6px;
+    min-height: 23px;
+    font-size: 11px;
+  }
+  dt { font-weight: 750; color: var(--accent); }
+  dd { margin: 0; }
+  .project-grid dd { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .record-line { margin: 0; border-top: 1px solid var(--border); padding: 9px 16px; color: var(--muted); font-size: 11px; }
+  .result-body { padding: 12px 16px 13px; }
+  .selectors { display: grid; grid-template-columns: 1.15fr 1fr; gap: 8px; }
+  .selectors label { display: flex; flex-direction: column; gap: 4px; min-width: 0; color: var(--muted); font-size: 11px; font-weight: 650; }
+  select, button {
+    min-width: 0;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #fff;
+    color: #203c39;
+    padding: 6px 7px;
+    font: inherit;
+  }
+  button { cursor: pointer; }
+  button:disabled { opacity: .45; cursor: default; }
+  button:not(:disabled):hover, select:hover { border-color: #619587; }
+  :focus-visible { outline: 2px solid #237e6b; outline-offset: 2px; }
+  .metrics-title { margin: 12px 0 4px; color: var(--muted); font-size: 11px; font-weight: 700; }
+  .total-value { margin: 0; color: var(--accent); font-size: clamp(23px, 2.5vw, 31px); font-weight: 800; letter-spacing: -.065em; }
+  .totals { padding: 5px 0 0; }
+  .totals > div { grid-template-columns: 1fr auto; min-height: 19px; }
+  .totals dd { font-variant-numeric: tabular-nums; }
+  .result-context, .reference { margin: 5px 0 0; font-size: 11px; color: var(--muted); }
+  .reference { padding-top: 8px; margin-top: 8px; border-top: 1px solid var(--border); }
+  .better { color: #087344; }
+  .worse { color: #a33c35; }
+  .playback { left: 50%; bottom: 18px; translate: -50% 0; width: min(830px, calc(100% - 40px)); padding: 11px 14px 12px; }
+  .controls { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 7px 12px; }
+  .control-buttons { display: flex; align-items: stretch; gap: 5px; }
+  .control-buttons button { min-width: 34px; }
+  #play { min-width: 76px; background: var(--accent); color: white; border-color: var(--accent); font-weight: 700; }
+  .play-speed { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 12px; }
+  .date-key { display: flex; gap: 10px; align-items: center; color: var(--muted); font-size: 11px; }
+  .key { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+  .key::before { content: ''; width: 8px; height: 8px; border-radius: 3px; background: #d5e6dc; }
+  .key.rain::before { background: #a9c8dc; }
+  #timeline { display: grid; grid-template-columns: repeat(var(--days, 30), minmax(0, 1fr)); gap: 3px; margin-top: 9px; }
+  #timeline button { height: 20px; overflow: hidden; padding: 0; font-size: 9px; background: #d5e6dc; border: 0; border-radius: 4px; }
+  #timeline button.rain { background: #a9c8dc; }
+  #timeline button[aria-current="date"] { background: #14554a; color: white; font-weight: 750; }
+  .load-state { left: 50%; top: 50%; translate: -50% -50%; max-width: calc(100% - 36px); width: 400px; padding: 15px 18px; text-align: center; }
+  .load-state code { overflow-wrap: anywhere; font-size: 12px; }
+  [hidden] { display: none !important; }
+  @media (max-width: 1030px) {
+    .status, .project { left: 12px; width: 235px; }
+    .results { right: 12px; width: 251px; }
+  }
+  @media (max-width: 720px) {
+    .status { top: 10px; width: 232px; padding: 11px 13px; }
+    .project { top: 110px; width: 220px; }
+    .project-grid, .record-line { padding: 7px 12px; }
+    .project-grid > div { min-height: 18px; }
+    .project summary, .results summary { padding: 9px 12px; }
+    .results { top: auto; bottom: 108px; max-height: min(38svh, 435px); overflow: auto; }
+    .playback { bottom: 9px; width: calc(100% - 20px); padding: 7px 8px 8px; }
+    #timeline { gap: 2px; margin-top: 6px; }
+    #timeline button { height: 16px; font-size: 0; }
+    .date-key { gap: 5px; }
+  }
+  @media (max-height: 590px) {
+    .project { max-height: min(39vh, 250px); overflow: auto; }
+    .results { max-height: min(58vh, 480px); overflow: auto; }
+  }
+</style>
+</head>
+<body>
+<canvas id="scene" aria-hidden="true"></canvas>
+<section class="card status" aria-label="Current replay date">
+  <h1 id="store-name">Yeouido Riverside Café</h1>
+  <div class="status-meta"><span id="date">Evaluation replay</span><span id="day-number"></span></div>
+  <div class="status-weather"><span id="weather">Loading weather…</span><time id="clock">—</time></div>
+</section>
+<details class="card project" open>
+  <summary>About this project</summary>
+  <dl class="project-grid">
+    <div><dt>Project</dt><dd title="Yeouido Riverside Café · Drinks and pastries">Riverside café · Pastries</dd></div>
+    <div><dt>Decision</dt><dd title="Choose one morning outreach action per eligible customer">Daily outreach per customer</dd></div>
+    <div><dt>Goal</dt><dd title="Maximize contribution profit while keeping opt-outs at or below 5%">Profit · At most 5% opt-outs</dd></div>
+    <div><dt>Agent</dt><dd>Café manager</dd></div>
+    <div><dt>State</dt><dd title="Price sensitivity, fatigue, outreach eligibility, weekend, public holiday, and remaining days">Price · Fatigue · Opt-in +3</dd></div>
+    <div><dt>Action</dt><dd title="No outreach, menu message, or a same-day coupon">None · Message · Coupon</dd></div>
+    <div><dt>Reward</dt><dd id="project-reward">—</dd></div>
+    <div><dt>Step · Episode</dt><dd id="project-period">—</dd></div>
+  </dl>
+  <p class="record-line">Replay <strong id="current-record">—</strong></p>
+</details>
+<details class="card results" id="results" open>
+  <summary>Replay results</summary>
+  <div class="result-body">
+    <div class="selectors">
+      <label>Record<select id="records" disabled></select></label>
+      <label>Episode<select id="episodes" disabled></select></label>
+    </div>
+    <p class="metrics-title">Average contribution profit</p>
+    <p class="total-value" id="overall-profit">—</p>
+    <p class="result-context" id="overall-context">Across evaluation episodes</p>
+    <p class="reference" id="reference" hidden></p>
+    <p class="metrics-title">This episode through the selected day</p>
+    <dl class="totals">
+      <div><dt>Contribution profit</dt><dd id="episode-profit">—</dd></div>
+      <div><dt>Reward</dt><dd id="episode-reward">—</dd></div>
+      <div><dt>Opt-outs</dt><dd id="episode-opt-outs">—</dd></div>
+      <div><dt>Visits</dt><dd id="episode-visits">—</dd></div>
+      <div><dt>Coupons redeemed</dt><dd id="episode-coupons">—</dd></div>
+    </dl>
+  </div>
+</details>
+<section class="card playback" aria-label="Replay controls">
+  <div class="controls">
+    <div class="control-buttons">
+      <button id="previous" type="button" aria-label="Previous day" disabled>‹</button>
+      <button id="play" type="button" disabled>▶ Play</button>
+      <button id="next" type="button" aria-label="Next day" disabled>›</button>
+    </div>
+    <label class="play-speed">Speed
+      <select id="speed" aria-label="Playback speed">
+        <option value="1">1×</option>
+        <option value="10">10×</option>
+        <option value="30">30×</option>
+        <option value="60">60×</option>
+      </select>
+    </label>
+    <div class="date-key" aria-label="Date legend"><span class="key">Dry day</span><span class="key rain">Rainy day</span></div>
+  </div>
+  <div id="timeline" aria-label="Jump to day"></div>
+</section>
+<div class="card load-state" id="load-state" role="status">Loading replay data…</div>
+<script>
+"use strict";
+
+const get = (id) => document.getElementById(id);
+const canvas = get("scene");
+const ctx = canvas.getContext("2d");
+const projectCard = document.querySelector(".project");
+const currency = new Intl.NumberFormat("en-KR", { style: "currency", currency: "KRW", maximumFractionDigits: 0 });
+const numbers = new Intl.NumberFormat("en", { maximumFractionDigits: 1 });
+const dateFormat = new Intl.DateTimeFormat("en", { month: "short", day: "numeric", weekday: "short", timeZone: "UTC" });
+const state = {
+  project: null,
+  records: [],
+  personas: new Map(),
+  record: null,
+  episode: null,
+  day: 0,
+  minute: 0,
+  playing: false,
+  lastFrame: 0,
+  average: new Map(),
+};
+const view = { width: 0, height: 0, x: 0, y: 0, scale: 1 };
+const shades = new Map();
+let sceneBrightness = 1;
+
+function text(id, value) {
+  get(id).textContent = value;
+}
+
+function dateLabel(iso) {
+  return dateFormat.format(new Date(iso + "T12:00:00Z"));
+}
+
+function money(value) {
+  return currency.format(Math.round(value));
+}
+
+function currentDay() {
+  return state.episode?.days[state.day];
+}
+
+function dailyRain(day) {
+  return day?.rainy === true;
+}
+
+function totals(days) {
+  const result = { profit: 0, reward: 0, rewardRecorded: true, optOuts: 0, visits: 0, coupons: 0 };
+  for (const day of days) {
+    result.profit += day.profit_krw;
+    if (typeof day.reward === "number") result.reward += day.reward;
+    else result.rewardRecorded = false;
+    result.optOuts += day.opt_outs;
+    result.visits += day.visitors.length;
+    result.coupons += day.visitors.filter((visitor) => visitor.redeemed_coupon).length;
+  }
+  return result;
+}
+
+function average(record) {
+  const sums = record.episodes.map((episode) => totals(episode.days));
+  return Object.fromEntries(["profit", "optOuts", "visits", "coupons"].map((key) => [
+    key, sums.reduce((sum, item) => sum + item[key], 0) / sums.length,
+  ]));
+}
+
+function percent(optOuts) {
+  return state.personas.size ? numbers.format(100 * optOuts / state.personas.size) + "%" : "—";
+}
+
+function updateResult() {
+  const selected = state.average.get(state.record.key);
+  const reference = state.average.get("selective");
+  text("overall-profit", money(selected.profit));
+  text("overall-context",
+    numbers.format(selected.visits) + " visits · " + percent(selected.optOuts) + " opt-outs · " +
+    state.record.episodes.length + " episodes");
+  const ref = get("reference");
+  ref.hidden = false;
+  ref.classList.remove("better", "worse");
+  if (reference) {
+    const difference = selected.profit - reference.profit;
+    if (state.record.key === "selective" || difference === 0) {
+      ref.textContent = "Selective rule average " + money(reference.profit);
+    } else {
+      ref.textContent = (difference > 0 ? "+" : "−") + money(Math.abs(difference)) +
+        " vs selective rule (" + money(reference.profit) + ")";
+      ref.classList.add(difference > 0 ? "better" : "worse");
+    }
+  } else {
+    ref.textContent = "Selective rule replay unavailable";
+  }
+  const episode = totals(state.episode.days.slice(0, state.day + 1));
+  text("episode-profit", money(episode.profit));
+  text("episode-reward", episode.rewardRecorded ? numbers.format(episode.reward) : "Unavailable");
+  text("episode-opt-outs", episode.optOuts + " (" + percent(episode.optOuts) + ")");
+  get("episode-opt-outs").classList.toggle("worse", episode.optOuts > state.personas.size * 0.05);
+  text("episode-visits", episode.visits);
+  text("episode-coupons", episode.coupons);
+}
+
+function clockMinutes() {
+  return state.project.opening_hour * 60 + Math.floor(state.minute);
+}
+
+function nightLevel(clock = 600) {
+  return Math.max(0, Math.min(1, (clock - 1150) / 105));
+}
+
+function updateClock() {
+  if (!state.project || !currentDay()) return;
+  const clock = clockMinutes();
+  const hh = String(Math.floor(clock / 60)).padStart(2, "0");
+  const mm = String(clock % 60).padStart(2, "0");
+  text("clock", hh + ":" + mm);
+  get("clock").dateTime = hh + ":" + mm;
+  const day = currentDay();
+  const condition = dailyRain(day) ? "☂ Rain" : nightLevel(clock) > 0.65 ? "☾ Clear" : "☀ Clear";
+  text("weather", typeof day.rainfall_mm === "number" ?
+    condition + " · " + numbers.format(day.rainfall_mm) + " mm" : "Weather unavailable");
+}
+
+function setPlaying(playing) {
+  state.playing = playing;
+  text("play", playing ? "❚❚ Pause" : "▶ Play");
+}
+
+function setDay(value) {
+  state.day = Math.max(0, Math.min(state.episode.days.length - 1, value));
+  state.minute = 0;
+  const day = currentDay();
+  text("date", dateLabel(day.date));
+  text("day-number", "Day " + (state.day + 1) + " / " + state.episode.days.length);
+  for (const button of get("timeline").children) {
+    if (Number(button.dataset.day) === state.day) button.setAttribute("aria-current", "date");
+    else button.removeAttribute("aria-current");
+  }
+  get("previous").disabled = state.day === 0;
+  get("next").disabled = state.day === state.episode.days.length - 1;
+  updateClock();
+  updateResult();
+}
+
+function selectEpisode(index) {
+  state.episode = state.record.episodes[index];
+  setPlaying(false);
+  const timeline = get("timeline");
+  timeline.style.setProperty("--days", state.episode.days.length);
+  timeline.replaceChildren(...state.episode.days.map((day, index) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.dataset.day = index;
+    button.textContent = index + 1;
+    button.className = dailyRain(day) ? "rain" : "";
+    button.title = "Day " + (index + 1) + " · " + dateLabel(day.date);
+    button.setAttribute("aria-label", button.title);
+    button.onclick = () => setDay(index);
+    return button;
+  }));
+  setDay(0);
+}
+
+function selectRecord(index) {
+  state.record = state.records[index];
+  const episodes = get("episodes");
+  episodes.replaceChildren(...state.record.episodes.map((episode, i) =>
+    new Option((i + 1) + " · " + dateLabel(episode.start_date), i)));
+  text("current-record", state.record.label);
+  text("project-reward", state.record.reward_label || "Unavailable");
+  get("project-reward").title = state.record.reward_label || "Unavailable";
+  selectEpisode(0);
+}
+
+async function fetchJson(path) {
+  const response = await fetch(path);
+  if (!response.ok) throw new Error(path + " returned HTTP " + response.status);
+  return response.json();
+}
+
+async function load() {
+  try {
+    if (location.protocol === "file:") {
+      const notice = get("load-state");
+      notice.textContent = "Open this replay through a local web server. From the Store folder, run ";
+      const code = document.createElement("code");
+      code.textContent = "uv run python -m http.server 8000 --bind 127.0.0.1 --directory public";
+      notice.append(code, " and open http://127.0.0.1:8000.");
+      return;
+    }
+    const [replay, personas] = await Promise.all([fetchJson("data/replays.json"), fetchJson("data/personas.json")]);
+    if (!replay.project || !replay.records?.length || !replay.records.every((item) =>
+      item.episodes?.length && item.episodes.every((episode) => episode.days?.length))) {
+      throw new Error("No complete replay episodes found");
+    }
+    state.project = replay.project;
+    state.records = replay.records;
+    for (const persona of personas) state.personas.set(String(persona.customer_id), persona);
+    for (const record of state.records) state.average.set(record.key, average(record));
+    text("store-name", replay.project.name);
+    text("project-period", "1 day · " + replay.project.episode_days + " days");
+    get("records").replaceChildren(...state.records.map((record, i) => {
+      const label = record.key === "selective" ? "Weekly outreach" : record.label;
+      return new Option(label, i);
+    }));
+    const trained = state.records.findIndex((record) => record.key === "ppo_v1" || /PPO/i.test(record.label));
+    const reference = state.records.findIndex((record) => record.key === "selective");
+    const first = trained >= 0 ? trained : Math.max(0, reference);
+    get("records").value = first;
+    selectRecord(first);
+    for (const id of ["records", "episodes", "play"]) get(id).disabled = false;
+    get("load-state").hidden = true;
+  } catch (error) {
+    text("load-state", "Replay unavailable. " + error.message);
+  }
+}
+
+get("records").onchange = (event) => selectRecord(Number(event.target.value));
+get("episodes").onchange = (event) => selectEpisode(Number(event.target.value));
+get("previous").onclick = () => setDay(state.day - 1);
+get("next").onclick = () => setDay(state.day + 1);
+get("play").onclick = () => {
+  const duration = 60 * (state.project.closing_hour - state.project.opening_hour);
+  if (!state.playing && state.minute >= duration) setDay(0);
+  setPlaying(!state.playing);
+};
+
+function position(x, y, z = 0) {
+  return [view.x + (x - y) * view.scale, view.y + ((x + y - 33) * 0.46 - z) * view.scale];
+}
+
+function polygon(points, fill) {
+  ctx.beginPath();
+  ctx.moveTo(...points[0]);
+  for (const point of points.slice(1)) ctx.lineTo(...point);
+  ctx.closePath();
+  ctx.fillStyle = fill;
+  ctx.fill();
+}
+
+function shade(hex, factor) {
+  const key = hex + factor;
+  if (!shades.has(key)) {
+    const channels = hex.slice(1).match(/../g).map((channel) => Math.round(Math.min(255, parseInt(channel, 16) * factor)));
+    shades.set(key, "rgb(" + channels.join(",") + ")");
+  }
+  return shades.get(key);
+}
+
+function box(x, y, width, depth, height, color, z = 0) {
+  const a = position(x, y, z + height);
+  const b = position(x + width, y, z + height);
+  const c = position(x + width, y + depth, z + height);
+  const d = position(x, y + depth, z + height);
+  const brightness = color === "#f6d389" || color === "#ffe1a0" ? 1 : sceneBrightness;
+  if (height > 0) {
+    const bottom = position(x + width, y + depth, z);
+    polygon([b, c, bottom, position(x + width, y, z)], shade(color, 0.7 * brightness));
+    polygon([c, d, position(x, y + depth, z), bottom], shade(color, 0.86 * brightness));
+  }
+  polygon([a, b, c, d], brightness < 1 && color.startsWith("#") ? shade(color, brightness) : color);
+}
+
+function plane(x, y, w, d, color, z = 0) {
+  box(x, y, w, d, 0, color, z);
+}
+
+function circle(x, y, radius, color) {
+  ctx.beginPath();
+  ctx.arc(x, y, radius, 0, 2 * Math.PI);
+  ctx.fillStyle = color;
+  ctx.fill();
+}
+
+function blend(a, b, ratio) {
+  return "rgb(" + a.map((component, i) => Math.round(component + (b[i] - component) * ratio)).join(",") + ")";
+}
+
+function sky(clock, rainy, seconds) {
+  const { width, height } = view;
+  const dark = nightLevel(clock);
+  const daylight = Math.max(0, 1 - Math.abs(clock - 840) / 270);
+  const sunset = Math.max(0, 1 - Math.abs(clock - 1120) / 150);
+  const topDay = rainy ? [125, 156, 172] : [116 + 64 * (1 - daylight), 169 + 14 * (1 - daylight), 196 + 10 * (1 - daylight)];
+  const horizon = rainy ? [194, 207, 208] : [237, 234 - 58 * sunset, 205 - 48 * sunset];
+  const gradient = ctx.createLinearGradient(0, 0, 0, height * 0.73);
+  gradient.addColorStop(0, blend(topDay, [13, 30, 53], dark));
+  gradient.addColorStop(1, blend(horizon, [68, 89, 116], dark));
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, width, height);
+  const sunX = view.x + view.scale * (12 - ((clock - 600) / 720) * 26);
+  const sunY = view.y - view.scale * (9 + Math.sin(Math.max(0, Math.min(1, (clock - 530) / 680)) * Math.PI) * 7);
+  if (!rainy) {
+    ctx.globalAlpha = 1 - dark;
+    circle(sunX, sunY, view.scale * 2.1, "rgba(255, 247, 199, 0.24)");
+    circle(sunX, sunY, view.scale * 1.44, "#fff1be");
+    ctx.globalAlpha = dark;
+    circle(view.x + view.scale * 15, view.y - view.scale * 14, view.scale * 0.95, "#f3edc9");
+    circle(view.x + view.scale * 15.37, view.y - view.scale * 14.23, view.scale * 0.88, "#203955");
+    for (let i = 0; i < 27; i++) {
+      circle(width * (((i * 271 + 213) % 991) / 991),
+        (view.y - view.scale * 7) * (((i * 43 + 17) % 107) / 107), 0.6 + (i % 3) / 3, "#f7f2dd");
+    }
+    ctx.globalAlpha = 1;
+  }
+  const cloud = rainy ? "rgba(194, 204, 208, 0.78)" : "rgba(250, 250, 240, 0.52)";
+  ctx.globalAlpha = 1 - dark * 0.68;
+  for (let i = 0; i < (rainy ? 9 : 5); i++) {
+    const x = ((i * width / 4.6 + seconds * 4.7) % (width + 270)) - 130;
+    const y = view.y - view.scale * (12 + (i * 7) % 10);
+    ctx.fillStyle = cloud;
+    ctx.beginPath();
+    ctx.ellipse(x, y, view.scale * (2.4 + i % 3), view.scale * 0.45, 0, 0, 2 * Math.PI);
+    ctx.ellipse(x + view.scale, y - view.scale * 0.39, view.scale * 1.8, view.scale * 0.58, 0, 0, 2 * Math.PI);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+}
+
+function landscape(seconds, rainy) {
+  plane(-30, 5.45, 90, 55.55, "#a7b99a");
+  plane(-35, -21, 95, 26.45, "#5c9ba9");
+  plane(-35, -22.5, 95, 1.5, "#a8ba9b");
+  plane(-35, -21, 95, 0.3, "#b5c9b3");
+  plane(-30, 4.9, 90, 0.55, "#86b4b8");
+  for (let i = 0; i < 56; i++) {
+    const x = (i * 37 % 94) - 33;
+    const y = (i * 79 % 243) / 10 - 20 + 0.16 * Math.sin(seconds + i);
+    plane(x, y, 1.1 + (i % 5) * 0.77, 0.083, i % 3 ? "#75aeb8" : "#a1c7c8", 0.015);
+  }
+  const [riverX, riverY] = position(3, -9.5);
+  ctx.font = "600 " + Math.max(11, view.scale) + "px system-ui, sans-serif";
+  ctx.fillStyle = "#e0eff0";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText("Han River", riverX, riverY);
+  plane(-30, 5.45, 90, 0.48, "#a7ac9e");
+  plane(-30, 5.93, 90, 1.74, "#dfd3b7");
+  plane(-30, 7.35, 90, 0.13, "#f3e9d1", 0.02);
+  plane(28, 7.68, 32, 27.0, "#8aa783");
+  plane(27.5, 7.64, 22.0, 1.16, "#c7b991");
+  plane(32, 8.75, 1.05, 14.45, "#c7b991");
+  plane(-25, 26, 85, 11.5, "#7d8d8a");
+  plane(-25, 25.4, 85, 1.2, "#d4cdb6");
+  plane(-25, 35.8, 85, 1.6, "#d4cdb6");
+  plane(2.2, 8.1, 4.6, 52.9, "#859397");
+  plane(1.30, 7.68, 1.06, 53.32, "#d4cdb6", 0.02);
+  plane(6.8, 7.68, 1.12, 53.32, "#d4cdb6", 0.02);
+  plane(25.3, 4.2, 2, 21.7, "#d1c7aa");
+  plane(7.92, 7.9, 17.4, 17.55, "#c5c4a7");
+  plane(8.2, 22.65, 17.2, 2.95, "#e2d5bb", 0.045);
+  plane(16.1, 22.6, 2.25, 3.6, "#ede1c8", 0.05);
+
+  for (let x = -23; x < 60; x += 2.3) {
+    if (x < 2 || x > 8) plane(x, 31.2, 1.14, 0.075, "#d7d3bd", 0.03);
+  }
+  for (let y = 8.6; y < 60; y += 2.2) {
+    if (y < 25 || y > 38) plane(4.4, y, 0.085, 1.05, "#d7d3bd", 0.03);
+  }
+  for (let i = 0; i < 7; i++) {
+    plane(15.4, 26.4 + i * 1.2, 3.18, 0.48, "#e1e0c9", 0.035);
+  }
+  for (let i = 0; i < 5; i++) {
+    plane(2.45 + i * 0.85, 22.6, 0.39, 2.1, "#e1e0c9", 0.036);
+  }
+  if (rainy) {
+    for (const [x, y, w, d] of [[10, 24.1, 1.7, 0.72], [21, 24, 2, 0.54], [3.25, 13, 0.8, 1.4], [23.4, 30.4, 1.9, 0.68], [26.9, 17.8, 0.5, 1.65]]) {
+      plane(x, y, w, d, "#a4b6b6", 0.055);
+      plane(x + 0.15, y + 0.12, w * 0.54, 0.055, "#c7d0cb", 0.06);
+    }
+  }
+}
+
+function tower(x, y, width, depth, height, wall, roof, kind, dark) {
+  plane(x + 0.7, y + 0.7, width + 0.45, depth + 0.45, "#93a69a", 0.031);
+  box(x, y, width, depth, height, wall);
+  box(x - 0.12, y - 0.12, width + 0.24, depth + 0.24, 0.23, roof, height - 0.14);
+  box(x + width * 0.36, y + depth * 0.23, width * 0.38, depth * 0.45, 0.43, roof, height + 0.09);
+  for (let floor = 1.45, row = 0; floor < height - 0.82; floor += 1.53, row++) {
+    for (let col = 0.62, index = 0; col < width - 0.6; col += 1.24, index++) {
+      const lit = dark > 0.43 && (row * 7 + index * 3) % 11 < 5;
+      box(x + col, y + depth + 0.01, 0.71, 0.045, 0.62, lit ? "#f6d389" : "#9fbabd", floor);
+    }
+    for (let col = 0.65, index = 0; col < depth - 0.75; col += 1.37, index++) {
+      const lit = dark > 0.43 && (row * 3 + index * 7) % 10 < 3;
+      box(x + width + 0.01, y + col, 0.04, 0.68, 0.62, lit ? "#f6d389" : "#9db6b9", floor);
+    }
+  }
+  box(x + width * 0.46, y + depth + 0.035, 1.04, 0.14, 1.24, "#63817b");
+  if (kind) plaque(x + 0.42, y + depth + 0.06, 2.9, 0.86, 0.62, kind, "#e4e6d7", "#4c625f");
+}
+
+function plaque(x, y, width, z, height, label, fill, ink) {
+  const [px, py] = position(x, y, z + height);
+  ctx.save();
+  ctx.transform(view.scale, view.scale * 0.46, 0, view.scale, px, py);
+  ctx.fillStyle = fill;
+  ctx.fillRect(0, 0, width, height);
+  ctx.fillStyle = ink;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.font = "750 " + height * 0.51 + "px system-ui, sans-serif";
+  ctx.fillText(label, width / 2, height * 0.53, width - 0.2);
+  ctx.restore();
+}
+
+function tree(x, y, size, i) {
+  const leaf = ["#638e68", "#739a70", "#527761", "#82a278"][i % 4];
+  plane(x - size * 0.25, y - size * 0.25, size * 1.23, size * 1.28, "#9fb091", 0.045);
+  box(x, y, 0.18 * size, 0.17 * size, 1.43 * size, "#876d53");
+  box(x - 0.45 * size, y - 0.43 * size, 1.12 * size, 1.08 * size, 0.79 * size, leaf, 1.06 * size);
+  box(x - 0.27 * size, y - 0.24 * size, 0.77 * size, 0.76 * size, 0.58 * size, shadeHexForCanopy(i), 1.73 * size);
+}
+
+function shadeHexForCanopy(i) {
+  return ["#86a875", "#95b17b", "#739776", "#9eb989"][i % 4];
+}
+
+function lamp(x, y, night) {
+  box(x, y, 0.11, 0.11, 2.8, "#526f6c");
+  box(x, y, 0.09, 0.59, 0.10, "#536e6a", 2.66);
+  box(x - 0.095, y + 0.42, 0.27, 0.34, 0.14, night ? "#ffe1a0" : "#c5c49e", 2.52);
+}
+
+function storeFloor() {
+  box(8.35, 9.25, 16.6, 13.85, 0.22, "#e5d5b6");
+  plane(8.67, 9.56, 8.45, 8.85, "#eddec1", 0.23);
+  plane(17.16, 9.56, 7.46, 13.2, "#dbc9a3", 0.23);
+  plane(8.67, 18.4, 8.5, 4.33, "#e8d2aa", 0.24);
+  for (let x = 9; x < 25; x += 0.95) plane(x, 18.4, 0.025, 4.33, "#d9bf98", 0.245);
+  for (let y = 10.3; y < 22.6; y += 1.03) plane(17.22, y, 7.39, 0.024, "#c6b392", 0.24);
+  plane(15.72, 21.55, 2.62, 1.66, "#8ba995", 0.25);
+  plane(16.05, 23.16, 2.36, 0.65, "#d4ae7e", 0.225);
+}
+
+function riversideDeck() {
+  box(8.35, 5.98, 16.6, 3.45, 0.22, "#b78e67");
+  for (let x = 8.75; x < 24.95; x += 0.82) {
+    plane(x, 6.01, 0.035, 3.37, "#a27b58", 0.23);
+  }
+  box(8.35, 5.97, 16.6, 0.14, 0.12, "#68988a", 0.91);
+  for (const x of [8.4, 11.64, 14.89, 18.15, 21.4, 24.79]) {
+    box(x, 6.02, 0.13, 0.13, 0.72, "#68988a", 0.22);
+  }
+}
+
+function storeWalls(dark) {
+  const walls = "#5b8d7e";
+  box(8.35, 9.25, 7.9, 0.34, 3.78, walls, 0.2);
+  box(16.25, 9.25, 2.55, 0.22, 0.63, walls, 0.2);
+  box(21.3, 9.25, 3.65, 0.22, 0.63, walls, 0.2);
+  box(8.35, 9.25, 0.35, 13.85, 3.78, walls, 0.2);
+  box(8.25, 9.17, 8.06, 0.49, 0.14, "#83a996", 3.95);
+  box(8.25, 9.17, 0.53, 13.9, 0.14, "#83a996", 3.95);
+  for (const x of [10, 12.96]) {
+    box(x, 9.6, 2.39, 0.044, 1.79, dark > 0.41 ? "#f3d393" : "#a9c8bc", 1.7);
+    box(x + 1.12, 9.67, 0.08, 0.05, 1.77, "#689788", 1.71);
+  }
+  for (const y of [10.42, 13.48, 16.48, 19.5]) {
+    box(8.71, y, 0.055, 2.48, 1.68, dark > 0.41 ? "#f3d393" : "#b5cec0", 1.66);
+  }
+}
+
+function storeFront(dark) {
+  box(8.35, 22.78, 7.72, 0.33, 1.78, "#4c7d70", 0.2);
+  box(18.41, 22.78, 6.55, 0.33, 1.58, "#4c7d70", 0.2);
+  box(24.62, 9.52, 0.34, 13.3, 0.7, "#68988a", 0.2);
+  for (const x of [18.85, 20.54, 22.23]) {
+    box(x, 23.12, 1.18, 0.055, 0.81, dark > 0.4 ? "#f5d599" : "#aac5b8", 0.57);
+  }
+  plaque(8.59, 23.15, 7.1, 0.62, 1.08, "Yeouido Riverside Café", dark > 0.42 ? "#f1d694" : "#f0e5c8", "#264f44");
+  for (const x of [16.07, 18.27]) box(x, 22.86, 0.17, 0.28, 3.16, "#4b7e6d", 0.22);
+  box(15.81, 22.72, 2.93, 0.82, 0.23, "#6c9d8a", 3.21);
+}
+
+function pastryCounter() {
+  box(9.35, 10.2, 6.25, 0.92, 1.43, "#a27a58", 0.23);
+  box(9.22, 10.13, 6.5, 1.06, 0.14, "#d5b891", 1.63);
+  box(9.41, 12.32, 6.7, 1.2, 1.22, "#ad825d", 0.23);
+  box(9.26, 12.18, 7, 1.42, 0.18, "#e3c295", 1.46);
+  box(9.65, 12.4, 2.78, 0.73, 0.08, "#7d755f", 1.64);
+  for (let i = 0; i < 6; i++) {
+    box(9.77 + i % 3 * 0.84, 12.5 + Math.floor(i / 3) * 0.31, 0.6, 0.23, 0.16,
+        i % 2 ? "#db9b5a" : "#edbb74", 1.71);
+  }
+  box(13.67, 10.28, 1.42, 0.68, 0.85, "#70877f", 1.76);
+  box(13.92, 10.95, 0.29, 0.34, 0.31, "#eee3cf", 1.79);
+  box(15.22, 12.65, 0.57, 0.58, 0.47, "#455e57", 1.64);
+  box(15.21, 12.61, 0.59, 0.15, 0.37, "#95a997", 1.98);
+  plaque(9.87, 13.68, 3.68, 0.38, 0.73, "Coffee & pastries", "#eddfc7", "#47615a");
+}
+
+function table(x, y, cloth) {
+  for (const [dx, dy] of [[0, 0], [0.94, 0], [0, 0.9], [0.94, 0.9]]) {
+    box(x + dx, y + dy, 0.12, 0.12, 0.85, "#9b785a", 0.24);
+  }
+  box(x - 0.08, y - 0.08, 1.23, 1.18, 0.14, "#c9986f", 1.09);
+  box(x + 0.06, y + 0.08, 0.87, 0.64, 0.035, cloth, 1.23);
+  box(x + 0.59, y + 0.34, 0.19, 0.19, 0.17, "#eee8d6", 1.28);
+  for (const yOffset of [-0.69, 1.34]) {
+    box(x + 0.24, y + yOffset, 0.51, 0.53, 0.54, "#a38061", 0.24);
+    box(x + 0.24, y + yOffset, 0.51, 0.13, 0.35, "#9d795c", 0.76);
+  }
+}
+
+function planter(x, y) {
+  box(x, y, 0.76, 0.75, 0.6, "#b98869", 0.18);
+  box(x + 0.12, y + 0.11, 0.5, 0.5, 0.68, "#779675", 0.72);
+}
+
+function progress() {
+  const duration = state.project ? 60 * (state.project.closing_hour - state.project.opening_hour) : 720;
+  return Math.min(1, state.minute / duration);
+}
+
+function pathPoint(points, fraction) {
+  const index = Math.min(points.length - 2, Math.floor(fraction * (points.length - 1)));
+  const phase = fraction * (points.length - 1) - index;
+  return points[index].map((value, axis) => value + (points[index + 1][axis] - value) * phase);
+}
+
+const mainEntrance = [17.2, 23.45];
+const approaches = {
+  office: [[8.1, 15.9], [8.0, 23.5], [14.7, 24.5], mainEntrance],
+  resident: [[15.9, 36.1], [17.0, 29.6], [17.2, 25.4], mainEntrance],
+  leisure: [[30.7, 7.02], [26.4, 8.3], [26.5, 19.1], [24.9, 24.1], mainEntrance],
+};
+const riversideExit = [[17.55, 14.6], [20.0, 10.04], [20.0, 7.58], [24.3, 7.58], [28.0, 7.02], [30.7, 7.02]];
+const outfit = {
+  office: ["#325f69", "#3a586e", "#8badb8", "#b09483", "#5e7784", "#b9beb2"],
+  resident: ["#849677", "#9b7061", "#798f9f", "#9e8d61", "#977e8e", "#567f79"],
+  leisure: ["#5d9a8e", "#b98065", "#c39d62", "#628c9a", "#819e71", "#a07676"],
+  staff: ["#367568"],
+};
+const skin = ["#d6aa84", "#c29372", "#e1b490", "#b98163", "#d4a17d"];
+const hair = ["#454241", "#353737", "#5c5148", "#383c38"];
+const bubbles = [];
+
+function person(x, y, z, persona, visitor, rainy, step, phase) {
+  const appearance = Math.abs(Number(persona?.appearance || visitor?.customer_id || 0));
+  const kind = persona?.style || "resident";
+  const size = persona?.age_group === "older" ? 0.91 : 0.96 + (appearance % 7) * 0.018;
+  const colors = outfit[kind] || outfit.resident;
+  const shirt = colors[appearance % colors.length];
+  const face = skin[appearance % skin.length];
+  const trousers = appearance % 2 ? "#575b62" : "#5e6660";
+  const walk = 0.09 * Math.sin(step * 9 + appearance);
+  z += 0.02;
+  plane(x - 0.07, y - 0.07, 0.54, 0.47, "rgba(35, 52, 47, 0.18)", z);
+  box(x + 0.03, y + walk, 0.16 * size, 0.19 * size, 0.41 * size, trousers, z);
+  box(x + 0.22, y - walk, 0.16 * size, 0.19 * size, 0.41 * size, trousers, z);
+  box(x, y, 0.4 * size, 0.25 * size, 0.5 * size, shirt, z + 0.39 * size);
+  box(x + 0.066, y + 0.02, 0.26 * size, 0.235 * size, 0.25 * size, face, z + 0.86 * size);
+  box(x + 0.06, y + 0.004, 0.273 * size, 0.253 * size, 0.07 * size,
+      persona?.age_group === "older" ? "#8a8981" : hair[appearance % hair.length], z + 1.1 * size);
+  if (kind === "office" || kind === "staff") {
+    box(x + 0.13, y + 0.26 * size, 0.14, 0.045, kind === "staff" ? 0.34 : 0.14,
+      kind === "staff" ? "#d5be95" : "#ddd4b8", z + (kind === "staff" ? 0.43 : 0.69));
+  }
+  if (visitor && phase > 0.63) box(x + 0.42, y + 0.09, 0.12, 0.12, 0.22, "#eee5cd", z + 0.59);
+  if (rainy && z < 0.2) {
+    box(x + 0.25, y + 0.17, 0.056, 0.056, 0.9, "#586e68", z + 0.64);
+    const canopy = ["#477d8c", "#7d6378", "#80905d", "#a76b50"][appearance % 4];
+    box(x - 0.2, y - 0.26, 0.85, 0.84, 0.12, canopy, z + 1.45);
+    box(x - 0.02, y - 0.08, 0.49, 0.47, 0.15, canopy, z + 1.57);
+  }
+  if (visitor && phase >= 0.53 && phase < 0.76) {
+    const [sx, sy] = position(x + 0.22, y + 0.13, z + 1.55);
+    circle(sx, sy, Math.max(2, view.scale * 0.13), visitor.redeemed_coupon ? "#bb793d" : "#267b58");
+    bubbles.push({ x: sx, y: sy, label: visitor.redeemed_coupon ? "Coupon used" : "Purchased" });
+  }
+}
+
+function visitorsForFrame(day, rainy, objects) {
+  if (!day) return;
+  const people = day.visitors;
+  const fraction = progress();
+  for (const [index, visitor] of people.entries()) {
+    const persona = state.personas.get(String(visitor.customer_id));
+    const start = index === 0 ? -0.012 : 0.04 + index / people.length * 0.75;
+    const phase = (fraction - start) / 0.17;
+    if (phase < 0 || phase > 1) continue;
+    const approach = approaches[persona?.style] || approaches.resident;
+    const counter = [11 + index % 4 * 1.11, 14.61 + index % 2 * 0.7];
+    const inbound = [...approach, [17.16, 19.45], [16.45, 16.75], counter];
+    const outbound = persona?.style === "leisure"
+      ? [counter, ...riversideExit]
+      : [counter, [14.83, 17.54], [17.16, 20.91], mainEntrance, ...approach.slice(0, -1).reverse()];
+    const [x, y] = phase <= 0.64
+      ? pathPoint(inbound, Math.min(1, phase / 0.51))
+      : pathPoint(outbound, (phase - 0.64) / 0.36);
+    const z = x > 8.65 && x < 24.75 && y > 6.1 && y < 23.08 ? 0.24 : 0.02;
+    objects.push({ depth: x + y, draw: () => person(x, y, z, persona, visitor, rainy, phase * 23, phase) });
+  }
+}
+
+function roundRect(x, y, w, h, radius, fill) {
+  ctx.beginPath();
+  ctx.roundRect(x, y, w, h, radius);
+  ctx.fillStyle = fill;
+  ctx.fill();
+}
+
+function drawLabels() {
+  if (!bubbles.length) return;
+  const used = [];
+  const positionCards = [get("results"), get("load-state"), document.querySelector(".status"), projectCard]
+    .filter((card) => !card.hidden).map((card) => card.getBoundingClientRect());
+  ctx.font = "600 10px system-ui, sans-serif";
+  ctx.textBaseline = "middle";
+  ctx.textAlign = "center";
+  for (const bubble of bubbles.slice().reverse()) {
+    const width = ctx.measureText(bubble.label).width + 14;
+    const x = bubble.x - width / 2;
+    const y = bubble.y - 23;
+    const collision = used.some((rect) => x < rect.x + rect.width + 4 && x + width + 4 > rect.x && y < rect.y + 21 && y + 21 > rect.y);
+    if (collision || x < 4 || x + width > view.width - 4 ||
+      positionCards.some((rect) => x < rect.right && x + width > rect.left && y < rect.bottom && y + 17 > rect.top)) continue;
+    used.push({ x, y, width });
+    roundRect(x, y, width, 17, 6, "rgba(255, 255, 248, 0.94)");
+    ctx.fillStyle = "#3e5f56";
+    ctx.fillText(bubble.label, bubble.x, y + 8.5);
+    if (used.length === 7) break;
+  }
+}
+
+function rainStreaks(seconds) {
+  const { width, height } = view;
+  ctx.strokeStyle = "rgba(218, 239, 243, 0.41)";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  for (let i = 0; i < 103; i++) {
+    const x = ((i * 217.3 - seconds * 52) % width + width) % width;
+    const y = (i * 79.1 + seconds * 250) % height;
+    ctx.moveTo(x, y);
+    ctx.lineTo(x - 4, y + 9);
+  }
+  ctx.stroke();
+}
+
+function draw(seconds) {
+  const day = currentDay();
+  const clock = state.project ? clockMinutes() : 600;
+  const rainy = dailyRain(day);
+  const dark = nightLevel(clock);
+  sky(clock, rainy, seconds);
+  sceneBrightness = Math.round((1 - dark * 0.37) * 24) / 24;
+  landscape(seconds, rainy);
+  const objects = [];
+  const add = (depth, draw) => objects.push({ depth, draw });
+  for (const [x, y, width, depth, height, wall, roof, kind] of [
+    [-5.35, 8.45, 5.9, 4.95, 7.4, "#97a8a4", "#bbc9be", "Office"],
+    [-6.75, 14.85, 6.7, 5.35, 7.9, "#b7c1b0", "#c9ceba", "Apartments"],
+  ]) {
+    add(x + y + 1, () => tower(x, y, width, depth, height, wall, roof, kind, dark));
+  }
+  const treeSites = [[-9, 8.3], [-1, 21], [0, 26], [33, 9.5], [31.1, 13], [29.3, 17], [35, 16], [38, 12], [31.4, 21], [0, 39], [8, 38.9], [13, 38.5], [22, 39], [27, 38], [35, 34], [-4, 38]];
+  for (const [i, [x, y]] of treeSites.entries()) add(x + y, () => tree(x, y, 0.77 + i % 4 * 0.16, i));
+  const lamps = [[7.7, 7.3], [7.7, 16.9], [8.1, 24.8], [24.5, 25.1], [21.1, 36.7], [6.9, 37.1], [28.3, 11.9]];
+  for (const [x, y] of lamps) add(x + y, () => lamp(x, y, dark > 0.4));
+  add(12, riversideDeck);
+  add(14, storeFloor);
+  add(17, () => storeWalls(dark));
+  add(22.7, () => person(11.01, 11.38, 0.24, { style: "staff", appearance: 3 }, null, false, 0, 0));
+  add(26.35, pastryCounter);
+  add(26.83, () => person(15.44, 11.49, 0.24, { style: "staff", appearance: 6 }, null, false, 0, 0));
+  for (const [x, y] of [[12.4, 6.97], [22.86, 6.97], [19.3, 12.4], [21.8, 13.6], [19.65, 17.31], [22.16, 18.46], [10.95, 18.59], [13.5, 20.25]]) {
+    add(x + y + 0.6, () => table(x, y, "#b4b39a"));
+  }
+  for (const [x, y] of [[8.9, 21.65], [23.82, 10.08], [23.7, 21.55], [9.9, 23.7], [23.75, 23.75]]) {
+    add(x + y, () => planter(x, y));
+  }
+  add(42.1, () => storeFront(dark));
+  bubbles.length = 0;
+  visitorsForFrame(day, rainy, objects);
+  objects.sort((a, b) => a.depth - b.depth);
+  for (const object of objects) object.draw();
+  sceneBrightness = 1;
+
+  if (rainy) rainStreaks(seconds);
+  drawLabels();
+}
+
+function resize() {
+  const ratio = Math.min(devicePixelRatio || 1, 2);
+  view.width = canvas.clientWidth;
+  view.height = canvas.clientHeight;
+  canvas.width = Math.round(view.width * ratio);
+  canvas.height = Math.round(view.height * ratio);
+  ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+  const small = view.width <= 720;
+  view.x = view.width * 0.50;
+  view.y = view.height * (small ? 0.53 : 0.47);
+  view.scale = Math.max(5, Math.min(view.width / (small ? 40 : 80), view.height / (small ? 47 : 49), 22));
+}
+
+function frame(now) {
+  const delta = state.lastFrame ? Math.min(0.25, (now - state.lastFrame) / 1000) : 0;
+  state.lastFrame = now;
+  if (state.playing) {
+    const duration = 60 * (state.project.closing_hour - state.project.opening_hour);
+    const nextMinute = state.minute + delta * Number(get("speed").value);
+    if (nextMinute >= duration) {
+      if (state.day + 1 < state.episode.days.length) {
+        setDay(state.day + 1);
+        state.minute = nextMinute - duration;
+      } else {
+        state.minute = duration;
+        setPlaying(false);
+      }
+    } else {
+      state.minute = nextMinute;
+    }
+    updateClock();
+  }
+  draw(now / 1000);
+  requestAnimationFrame(frame);
+}
+
+if (matchMedia("(max-width: 720px)").matches) get("results").open = false;
+window.addEventListener("resize", resize);
+resize();
+load();
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

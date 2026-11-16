@@ -1,0 +1,6 @@
+.venv/
+__pycache__/
+results/runs/
+results/.run.lock
+data/raw/
+*.env
