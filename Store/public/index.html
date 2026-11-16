@@ -31,7 +31,7 @@
   h1 { margin: 0 0 4px; font-size: 18px; line-height: 1.15; letter-spacing: -.035em; }
   .status-meta, .status-weather { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
   .status-meta { font-size: 12px; color: var(--muted); }
-  .status-weather { margin-top: 11px; padding-top: 9px; border-top: 1px solid var(--border); font-size: 12px; }
+  .status-weather { margin-top: 11px; padding-top: 9px; border-top: 1px solid var(--border); font-size: 11px; }
   #clock { font-variant-numeric: tabular-nums; font-weight: 750; font-size: 17px; }
   .project { top: 138px; left: 20px; width: 274px; }
   .results { top: 20px; right: 20px; width: 294px; }
@@ -206,6 +206,41 @@ const view = { width: 0, height: 0, x: 0, y: 0, scale: 1 };
 const shades = new Map();
 let sceneBrightness = 1;
 
+// Visual assumption for Seoul's calendar seasons. These palettes do not affect simulation results.
+const seasonByMonth = [
+  "winter", "winter", "spring", "spring", "spring", "summer",
+  "summer", "summer", "autumn", "autumn", "autumn", "winter",
+];
+const seasonPalettes = {
+  spring: {
+    name: "Spring", ground: "#b3c3a0", park: "#a1b48d", soil: "#b0ba94",
+    leaves: ["#dca9b1", "#e3bcc7", "#d9acbc", "#e8c2c4"],
+    canopy: ["#f4d5d5", "#f1d8e1", "#ecc9d7", "#f6dfda"],
+    scatter: "#e8c6cd", plant: "#91a181",
+  },
+  summer: {
+    name: "Summer", ground: "#9eb58e", park: "#7fa178", soil: "#9aaa83",
+    leaves: ["#52855e", "#638f60", "#4c795e", "#759a68"],
+    canopy: ["#7da666", "#8aaf70", "#6c9769", "#94b47c"],
+    scatter: null, plant: "#6f956e",
+  },
+  autumn: {
+    name: "Autumn", ground: "#b8b293", park: "#b3a479", soil: "#aa9b79",
+    leaves: ["#b97a49", "#c99a50", "#b96d4b", "#c6a161"],
+    canopy: ["#d8ae68", "#e0bc74", "#d29560", "#ddc184"],
+    scatter: "#c59858", plant: "#a18e61",
+  },
+  winter: {
+    name: "Winter", ground: "#b5b8aa", park: "#a3ab9a", soil: "#a7aa9c",
+    leaves: [], canopy: [], scatter: null, plant: "#85917e",
+  },
+};
+
+function seasonForDate(iso) {
+  const month = Number(iso?.slice(5, 7));
+  return seasonPalettes[seasonByMonth[month - 1]] || null;
+}
+
 function text(id, value) {
   get(id).textContent = value;
 }
@@ -298,8 +333,11 @@ function updateClock() {
   get("clock").dateTime = hh + ":" + mm;
   const day = currentDay();
   const condition = dailyRain(day) ? "☂ Rain" : nightLevel(clock) > 0.65 ? "☾ Clear" : "☀ Clear";
-  text("weather", typeof day.rainfall_mm === "number" ?
-    condition + " · " + numbers.format(day.rainfall_mm) + " mm" : "Weather unavailable");
+  const season = seasonForDate(day.date);
+  const weather = typeof day.rainfall_mm === "number"
+    ? condition + " · " + numbers.format(day.rainfall_mm) + " mm"
+    : "Weather unavailable";
+  text("weather", (season ? season.name + " · " : "") + weather);
 }
 
 function setPlaying(playing) {
@@ -334,7 +372,7 @@ function selectEpisode(index) {
     button.dataset.day = index;
     button.textContent = index + 1;
     button.className = dailyRain(day) ? "rain" : "";
-    button.title = "Day " + (index + 1) + " · " + dateLabel(day.date);
+    button.title = "Day " + (index + 1) + " · " + dateLabel(day.date) + " · " + seasonForDate(day.date).name;
     button.setAttribute("aria-label", button.title);
     button.onclick = () => setDay(index);
     return button;
@@ -346,7 +384,8 @@ function selectRecord(index) {
   state.record = state.records[index];
   const episodes = get("episodes");
   episodes.replaceChildren(...state.record.episodes.map((episode, i) =>
-    new Option((i + 1) + " · " + dateLabel(episode.start_date), i)));
+    new Option(seasonForDate(episode.start_date).name + " · " +
+      Number(episode.start_date.slice(5, 7)) + "/" + Number(episode.start_date.slice(8, 10)), i)));
   text("current-record", state.record.label);
   text("project-reward", state.record.reward_label || "Unavailable");
   get("project-reward").title = state.record.reward_label || "Unavailable";
@@ -499,9 +538,10 @@ function sky(clock, rainy, seconds) {
 }
 
 function landscape(seconds, rainy) {
-  plane(-30, 5.45, 90, 55.55, "#a7b99a");
+  const season = seasonForDate(currentDay()?.date) || seasonPalettes.summer;
+  plane(-30, 5.45, 90, 55.55, season.ground);
   plane(-35, -21, 95, 26.45, "#5c9ba9");
-  plane(-35, -22.5, 95, 1.5, "#a8ba9b");
+  plane(-35, -22.5, 95, 1.5, season.ground);
   plane(-35, -21, 95, 0.3, "#b5c9b3");
   plane(-30, 4.9, 90, 0.55, "#86b4b8");
   for (let i = 0; i < 56; i++) {
@@ -518,7 +558,7 @@ function landscape(seconds, rainy) {
   plane(-30, 5.45, 90, 0.48, "#a7ac9e");
   plane(-30, 5.93, 90, 1.74, "#dfd3b7");
   plane(-30, 7.35, 90, 0.13, "#f3e9d1", 0.02);
-  plane(28, 7.68, 32, 27.0, "#8aa783");
+  plane(28, 7.68, 32, 27.0, season.park);
   plane(27.5, 7.64, 22.0, 1.16, "#c7b991");
   plane(32, 8.75, 1.05, 14.45, "#c7b991");
   plane(-25, 26, 85, 11.5, "#7d8d8a");
@@ -586,15 +626,40 @@ function plaque(x, y, width, z, height, label, fill, ink) {
 }
 
 function tree(x, y, size, i) {
-  const leaf = ["#638e68", "#739a70", "#527761", "#82a278"][i % 4];
-  plane(x - size * 0.25, y - size * 0.25, size * 1.23, size * 1.28, "#9fb091", 0.045);
-  box(x, y, 0.18 * size, 0.17 * size, 1.43 * size, "#876d53");
-  box(x - 0.45 * size, y - 0.43 * size, 1.12 * size, 1.08 * size, 0.79 * size, leaf, 1.06 * size);
-  box(x - 0.27 * size, y - 0.24 * size, 0.77 * size, 0.76 * size, 0.58 * size, shadeHexForCanopy(i), 1.73 * size);
-}
+  const season = seasonForDate(currentDay()?.date) || seasonPalettes.summer;
+  plane(x - size * 0.25, y - size * 0.25, size * 1.23, size * 1.28, season.soil, 0.045);
+  box(x, y, 0.18 * size, 0.17 * size, 1.65 * size, "#876d53");
 
-function shadeHexForCanopy(i) {
-  return ["#86a875", "#95b17b", "#739776", "#9eb989"][i % 4];
+  if (!season.leaves.length) {
+    // Bare stepped branches keep winter distinct without implying recorded snowfall.
+    for (const [dx, dy] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) {
+      for (let branch = 0; branch < 3; branch++) {
+        box(x + dx * (0.12 + branch * 0.13) * size,
+          y + dy * (0.12 + branch * 0.13) * size,
+          0.12 * size, 0.12 * size, 0.23 * size, "#8c7761",
+          (1.18 + branch * 0.18) * size);
+      }
+    }
+    box(x + 0.02 * size, y + 0.02 * size, 0.11 * size, 0.11 * size, 0.48 * size, "#8c7761", 1.64 * size);
+    return;
+  }
+
+  if (season.scatter) {
+    for (let leaf = 0; leaf < 7; leaf++) {
+      const dx = ((leaf * 7 + i * 3) % 13) / 9 - 0.45;
+      const dy = ((leaf * 3 + i * 7) % 11) / 8 - 0.4;
+      plane(x + dx * size, y + dy * size, 0.11 * size, 0.08 * size, season.scatter, 0.052);
+    }
+  }
+  box(x - 0.45 * size, y - 0.43 * size, 1.12 * size, 1.08 * size, 0.79 * size,
+      season.leaves[i % 4], 1.06 * size);
+  box(x - 0.27 * size, y - 0.24 * size, 0.77 * size, 0.76 * size, 0.58 * size,
+      season.canopy[i % 4], 1.73 * size);
+  if (season === seasonPalettes.spring) {
+    for (const [dx, dy] of [[-0.16, -0.13], [0.28, -0.05], [0.12, 0.32]]) {
+      box(x + dx * size, y + dy * size, 0.13 * size, 0.12 * size, 0.04 * size, "#fae9df", 2.31 * size);
+    }
+  }
 }
 
 function lamp(x, y, night) {
@@ -685,8 +750,9 @@ function table(x, y, cloth) {
 }
 
 function planter(x, y) {
+  const season = seasonForDate(currentDay()?.date) || seasonPalettes.summer;
   box(x, y, 0.76, 0.75, 0.6, "#b98869", 0.18);
-  box(x + 0.12, y + 0.11, 0.5, 0.5, 0.68, "#779675", 0.72);
+  box(x + 0.12, y + 0.11, 0.5, 0.5, 0.68, season.plant, 0.72);
 }
 
 function progress() {

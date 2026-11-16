@@ -7,6 +7,7 @@
 | Store | Yeouido Riverside Café, a virtual café serving drinks and pastries. |
 | Location and trade area | Near [Yeouido Hangang Park](https://english.seoul.go.kr/hangang-parks/) in Yeongdeungpo-gu, Seoul. The assumed trade area includes the park, nearby offices, and residences. |
 | Replay layout | The café sits beside the Han River, with an open terrace facing the water. The office and apartment buildings sit across the street on the inland side. |
+| Calendar seasons | The replay and evaluation summary use Seoul's calendar seasons. Spring is March–May, summer June–August, autumn September–November, and winter December–February. A 30-day evaluation window is grouped by its midpoint date for seasonal comparisons. |
 | Main customers | Assumed to be adult office workers, local residents, and park visitors. |
 | Customer scale | Assumption: 100 registered customers, one per persona, all initially opted in to receive outreach. |
 | Repeated decision | Each morning, choose no outreach, send a menu update with no discount, or send a coupon for that day. The coupon gives a 15% discount (assumption). |
@@ -82,3 +83,6 @@ Record each change, why it was made, and its result.
 | 2026-11-16 | Built the local Canvas replay using the 10:00–22:00 opening hours. | Show recorded visits, rainfall, and results for the four validation policies. | Verified controls and label fit in the browser with zero console errors. |
 | 2026-11-16 | Stopped at the initial PPO trial. | Follow the user's choice to defer the full training run. | The run history contains the trial timing. |
 | 2026-11-16 | Moved the office and apartments inland and added a café terrace on the Han River. | Give café visitors a clear view of the water. | Verified the river view and day controls in the browser with zero console errors. |
+| 2026-11-16 | Fixed learning-curve export to use a file-only Matplotlib backend. | The macOS display backend aborted when the training script saved its first chart. | The full run saved its chart and completed evaluation after the fix. |
+| 2026-11-16 | Completed 60,416 PPO training steps and the initial held-out evaluation. | Run the full training requested by the user. | Saved the model, learning curve, 1,000 experience samples, and replay. Mean 30-day profit was ₩1,406,000, with a worst opt-out share of 81%, above the 5% limit. |
+| 2026-11-16 | Added four calendar seasons to the scene and the evaluation summary. | Show spring, summer, autumn, and winter as requested. | Checked spring blossoms, summer green, autumn foliage, and winter bare branches. Each seasonal comparison uses three evaluation windows grouped by midpoint date. |

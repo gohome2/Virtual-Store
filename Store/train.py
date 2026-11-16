@@ -4,6 +4,7 @@ import argparse
 import csv
 import json
 import os
+from datetime import timedelta
 from pathlib import Path
 from statistics import mean
 from tempfile import TemporaryDirectory
@@ -26,6 +27,7 @@ ROLLOUT_STEPS = 512
 BATCH_SIZE = 64
 SAMPLE_STEPS = 1_000
 MODEL_PATH = RESULTS_DIR / "models" / "v1"
+SEASON_NAMES = ("Winter", "Spring", "Summer", "Autumn")
 
 
 class TrainingRecords(BaseCallback):
@@ -70,6 +72,9 @@ class TrainingRecords(BaseCallback):
 
         with TemporaryDirectory() as cache:
             os.environ.setdefault("MPLCONFIGDIR", cache)
+            import matplotlib
+
+            matplotlib.use("Agg")
             from matplotlib import pyplot as plt
 
             steps, _, rolling = zip(*averaged, strict=True)
@@ -122,6 +127,37 @@ def evaluate_v1(model):
         f"Difference from selective weekly outreach in mean 30-day profit: {delta:+,.0f} KRW.",
         "Reward v1 uses contribution profit alone. Actual opt-outs are evaluated against the separate limit.",
     ))
+    reference_label = POLICY_LABELS["selective_outreach"]
+    seasonal_windows = {
+        label: {season: [] for season in SEASON_NAMES}
+        for label in ("PPO v1", reference_label)
+    }
+    for label, groups in seasonal_windows.items():
+        for window in rows[label].windows:
+            midpoint = window.start_date + timedelta(days=EPISODE_DAYS // 2)
+            season = SEASON_NAMES[(midpoint.month % 12) // 3]
+            groups[season].append(window)
+    lines.extend((
+        "",
+        "## Results by season",
+        "",
+        "Seasons follow Seoul's calendar. Spring is March–May, summer June–August, "
+        "autumn September–November, and winter December–February.",
+        "Each 30-day window is grouped by its midpoint date. Each season contains "
+        "three evaluation windows. Some windows span the transition between seasons.",
+        "",
+        "| Season | PPO mean profit (KRW) | Weekly rule mean profit (KRW) | PPO worst opt-outs | Weekly rule worst opt-outs |",
+        "| --- | ---: | ---: | ---: | ---: |",
+    ))
+    for season in SEASON_NAMES:
+        ppo_windows = seasonal_windows["PPO v1"][season]
+        weekly_windows = seasonal_windows[reference_label][season]
+        lines.append(
+            f"| {season} | {mean(window.profit_krw for window in ppo_windows):,.0f} | "
+            f"{mean(window.profit_krw for window in weekly_windows):,.0f} | "
+            f"{max(window.opt_out_share for window in ppo_windows):.1%} | "
+            f"{max(window.opt_out_share for window in weekly_windows):.1%} |"
+        )
     (RESULTS_DIR / "summary_v1.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
     print(f"PPO v1 mean {EPISODE_DAYS}-day profit: ₩{ppo_metrics.average_profit_krw:,.0f}.")
     print(f"Worst evaluation window opt-out share: {ppo_metrics.worst_opt_out_share:.1%}.")

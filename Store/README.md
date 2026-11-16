@@ -13,6 +13,8 @@ From this folder in VS Code, run `uv sync --locked` to install the Python 3.12 e
 
 Use `uv run check.py` to verify customer traits. After menu item 1, run `uv run python -m http.server 8000 --bind 127.0.0.1 --directory public` and open [the local replay](http://127.0.0.1:8000) in a browser.
 
+The replay's Episode menu labels the season and start date. Trees and ground colors follow each day's calendar season. After full training, the replay includes PPO v1 and `results/summary_v1.md` compares its results across all four seasons.
+
 `project_spec.md` records the model and assumptions. The `data/` folder contains the synthetic customer profiles, their price sensitivity estimates, and daily rain and calendar inputs. `results/` contains the latest summaries, action logs, and run history. `public/` contains the replay and the data used to draw it.
 
 The 100 synthetic profiles come from [NVIDIA Nemotron-Personas-Korea](https://huggingface.co/datasets/nvidia/Nemotron-Personas-Korea) under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), with English summaries added. Rainfall comes from [Open-Meteo's ERA5 archive](https://open-meteo.com/en/docs/historical-weather-api). [Python Holidays](https://holidays.readthedocs.io/en/latest/) supplies the Korean public holiday calendar. Use `uv run make_external_factors.py` to rebuild the daily inputs.
